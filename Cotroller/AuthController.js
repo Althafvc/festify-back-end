@@ -85,44 +85,50 @@ exports.adminSignup = async (req, res) => {
 
 
 
-exports.Otp = async (req,res)=> {
+// Exported function for verifying OTP
+exports.Otp = async (req, res) => {
     
-    const {otp, email, role} = req.body    
+    // Extracting OTP, email, and role from the request body
+    const { otp, email, role } = req.body    
 
+    // Converting received OTP array into a string and trimming any extra spaces
     const recievedOtp = otp.join('').trim();
+    // Converting the stored actual OTP into a string and trimming spaces
     const actualOtp = givenOTP.toString().trim()
 
     try {
-
-        if(role=='admin') {
+        // Check if the user role is 'admin'
+        if (role == 'admin') {
             
-            const admin = await admindataModel.findOne({email})
+            // Find the admin by their email in the database
+            const admin = await admindataModel.findOne({ email })
 
-            if(!admin) {
+            // If the admin is not found, return an error response
+            if (!admin) {
                 return res.status(401).json({ msg: 'User not found' });
-
-            }else if (recievedOtp != actualOtp) {
+            }
+            // If the received OTP does not match the actual OTP, return an error response
+            else if (recievedOtp != actualOtp) {
                 return res.status(400).json({ msg: 'Invalid OTP' });
-
-            }else {
-
+            }
+            // If both email and OTP are valid, proceed to verify the admin's account
+            else {
                 try {
-                    await admindataModel.updateOne({email}, {$set: {verified:true}})
+                    // Update the admin's verification status to true in the database
+                    await admindataModel.updateOne({ email }, { $set: { verified: true } })
 
+                    // Return success response when OTP is verified successfully
                     return res.status(200).json({ msg: 'OTP verified successfully' });
 
-                }catch(err) {
-                    
+                } catch (err) {
+                    // Handling any server-side errors during the update process
                     return res.status(500).json({ msg: 'Server error' });
-
                 }
             }
-            
-
         }
 
-    }catch(err) {
-        return res.status(500).json({msg:'server error'})
+    } catch (err) {
+        // Handling any server-side errors during OTP verification
+        return res.status(500).json({ msg: 'server error' })
     }
-    
 }
