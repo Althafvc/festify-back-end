@@ -5,15 +5,18 @@ const mailotp = require('../Middlewares/Mailotp') // Middleware for generating O
 const otpMailer = require('../Utilities/otpmailer') // Utility for sending OTP via email
 let givenOTP = '' // Variable to store the generated OTP
 
+ // Regular expressions for email and password validation
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/;
+
+
 // Exported function for admin signup
 exports.adminSignup = async (req, res) => {
 
     // Extracting fields from the request body
     const { institutionname, institutiontype, email, password, confirmpassword, role, verified } = req.body
 
-    // Regular expressions for email and password validation
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/;
+
 
     try {
         // Checking if an account with the given email already exists
@@ -132,3 +135,48 @@ exports.Otp = async (req, res) => {
         return res.status(500).json({ msg: 'server error' })
     }
 }
+
+// Asynchronous admin login function
+exports.adminLogin = async (req, res) => {
+    // Destructuring email and password from the request body
+    const { email, password } = req.body;
+
+    // Check if either email or password is an empty string after trimming spaces
+    if (email.trim() == '' || password.trim == '') {
+        // Respond with a 400 status if fields are empty
+        return res.status(400).json({ message: 'All fields are mandatory' });
+    }
+
+    // Validate email and password format using regex patterns (assuming emailRegex and passwordRegex are defined)
+    else if (!emailRegex.test(email) || !passwordRegex.test(password)) {
+        // Respond with a 400 status if the email or password format is invalid
+        return res.status(400).json({ message: 'Invalid email or password format' });
+    }
+
+    try {
+        // Find the admin data in the database using the provided email
+        const adminDatas = await admindataModel.findOne({ email });
+
+        // Check if the admin with the given email exists in the database
+        if (!adminDatas) {
+            // Respond with a 404 status if the admin is not found
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Compare the provided password with the hashed password stored in the database
+        const passwordMatch = await bcrypt.compare(password, adminDatas.password);
+
+        // If password comparison fails, respond with a 400 status
+        if (!passwordMatch) {
+            return res.status(400).json({ message: 'Incorrect password' });
+        } else {
+            // If login is successful, respond with a 200 status and a success message
+            return res.status(200).json({ message: 'Login successful' });
+        }
+
+    } catch (err) {
+        // Log the error and respond with a 500 status if any server-side issue occurs
+        console.error(err);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
