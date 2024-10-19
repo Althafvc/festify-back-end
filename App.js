@@ -8,12 +8,15 @@ const port = process.env.port || 3000
 
 
 const commonRouter = require('./Router/commonRouter')
+const adminRouter = require('./Router/adminRouter')
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(cors())
 
 app.use('/',commonRouter)
+app.use('/admin',adminRouter)
+
 
 
 

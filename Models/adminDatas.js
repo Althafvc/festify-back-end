@@ -15,6 +15,8 @@ const adminDataSchema = new mongoose.Schema({
     role: {type:String, required:true, default:'admin'},
     verified: {type:Boolean, default:false}
 
+},{
+    timestamps:true
 })
 
 const adminDatamodel = mongoose.model('Admindatas',adminDataSchema)
