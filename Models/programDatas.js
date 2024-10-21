@@ -8,6 +8,7 @@ const programDataSchema = new mongoose.Schema({
     numberofStudents:{type:Number, required:true},
     numberofSections:{type:Number, required:true},
     numberofVenues:{type:Array, required:true},
+    controllers:[]
 
 },{
     timestamps:true
